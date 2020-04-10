@@ -14,29 +14,28 @@ pid_t child;
 char cwd[1000];
 char folder[1000];
 
-void *movefile(void *arg) {
+void *move(void *arg) {
 	char *filepath = (char *)arg;
 
-	// cek ekstensi file
 	int dot = '.';
-    char *extension = NULL;
+	char *extension = NULL;
 	extension = strrchr(filepath, dot);
 
-	char extlower[1000];
-	memset(extlower, '\0', sizeof(extlower));
+	char ext[1000];
+	memset(ext, '\0', sizeof(ext));
 	if(extension) {
 		extension++;
-        for(int i=0; i<strlen(extension); i++) {
-               	extlower[i] = tolower(extension[i]);
-    	}
+        	for(int i=0; i<strlen(extension); i++) {
+               		ext[i] = tolower(extension[i]);
+    		}
 	}
-	else strcpy(extlower, "Unknown");
+	else strcpy(ext, "Unknown");
 
-	// simpan nama file
-    int slash = '/';
-    char *filename = NULL;
-    filename = strrchr(filepath, slash);
-    if(filename) filename++;
+    	int slash = '/';
+    	char *filename = NULL;
+    	filename = strrchr(filepath, slash);
+    	if(filename) 
+		filename++;
 	else filename = filepath;
 
 	char folderpath[1000];
@@ -44,26 +43,23 @@ void *movefile(void *arg) {
 	strcat(folderpath, "/");
 	strcat(folderpath, extlower);
 
-	// buat directory
 	mkdir(folderpath, S_IRWXU);
 
-	if(strlen(folder) > 1) {		// untuk opsi -d
+	if(strlen(folder) > 1) {
 		char fullname[1000];
 		strcpy(fullname, folder);
 		strcat(fullname, "/");
 		strcat(fullname, filename);
 
 		strcat(folderpath, "/");
-        strcat(folderpath, filename);
+        	strcat(folderpath, filename);
 
-        // move file
-        rename(fullname, folderpath);
+        	rename(fullname, folderpath);
 	}
-	else {					// untuk opsi lain
-	    strcat(folderpath, "/");
-        strcat(folderpath, filename);
+	else {					
+	    	strcat(folderpath, "/");
+        	strcat(folderpath, filename);
 
-		// move file
 		rename(filepath, folderpath);
 	}
 	return NULL;
@@ -80,7 +76,7 @@ int main(int argc, char *argv[]) {
 	}
 	if(strcmp(argv[1], "-f") == 0) {
 		for(int i=2; i<argc; i++) {
-			err = pthread_create(&tid[i], NULL, movefile, (void *)argv[i]);
+			err = pthread_create(&tid[i], NULL, move, (void *)argv[i]);
 			if(err != 0) printf("\ncan't create thread : [%s]",strerror(err));
 		}
 		for(int j=2; j<argc; j++)
@@ -106,7 +102,7 @@ int main(int argc, char *argv[]) {
             if(strcmp(tmp->d_name, ".")==0 || strcmp(tmp->d_name, "..")==0 || strcmp(tmp->d_name, "soal3.c")==0 || strcmp(tmp->d_name, "soal3")==0 || tmp->d_type==DT_DIR) 
 			continue;
 
-            err = pthread_create(&tid[i], NULL, movefile, tmp->d_name);
+            err = pthread_create(&tid[i], NULL, move, tmp->d_name);
             if(err != 0) 
 				printf("\ncan't create thread : [%s]",strerror(err));
             i++;
