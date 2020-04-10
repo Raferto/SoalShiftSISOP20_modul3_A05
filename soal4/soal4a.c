@@ -12,15 +12,22 @@
 #define BK 2
 #define K 5
 
-typedef struct pass{
-	int i, j;
-} pass;
+void* mul(void* struk){
+	int *arg = (int*)struk;
+    int k=0, i=0;
 
-void* mul(void* struk);
+	int x=arg[0];
+	for(i=1; i<=x; i++)
+		k+=arg[i]*arg[i+x];
+	
+	int *p=(int*)malloc(sizeof(int));
+	*p=k;
+	pthread_exit(p);
+}
 
 int m1[B][BK] = { {1,2}, {2,3}, {3,2}, {2,1}},	// matriks 
 	m2[BK][K] = { {1,2,1,2,1}, {2,1,2,1,2} },	// matriks 
-    m[B][K]; // matriks hasil
+    m[B*K]; // matriks hasil
 
 int main(){
 	
@@ -29,7 +36,7 @@ int main(){
 	int shmid=shmget(key, sizeof(int)*4*5, IPC_CREAT | 0666 );
 	int *res=(int *)shmat(shmid, NULL, 0);
 	
-    int i,j;
+    int i,j,k;
     printf("Matriks 1 %dx%d:\n", B, BK);
 	for(i=0; i < B; i++){
 		for(j=0; j < BK; j++)
@@ -45,30 +52,49 @@ int main(){
 	}
 
 	int err;
+	pthread_t *tid=(pthread_t*)malloc((20)*sizeof(pthread_t));
+
+	int count=0;
+	int* arg=NULL;
+
 	for(i=0; i < B; i++){
         for(j=0; j < K; j++){
-	        pass *arg = (pass*) malloc(sizeof(pass));
-            arg->i=i;
-            arg->j=j;
 
-            pthread_t tid;
-			err = pthread_create(&tid,NULL,mul,(void*) arg);
+			arg=(int*)malloc((20)*sizeof(int));
+			arg[0]=BK;
+
+			for	(k=0; k<BK; k++){
+				arg[k+1]=m1[i][k];
+			}
+			for	(k=0; k<BK; k++){
+				arg[k+BK+1]=m2[k][j];
+			}
+
+				
+			err = pthread_create(&tid[count++],NULL,mul,(void*) arg);
 			if(err!=0)
 				printf("\n can't create thread : [%s]",strerror(err));
 			// else
 				// printf("\n create thread success\n");
-
-			pthread_join(tid,NULL); 
 		}
     }
 
 	printf("\nHasil Kali Matriks %dx%d:\n", B, K);
-	for(i=0; i < B; i++){
-		for(j=0; j < K; j++){
-            res[i*5+j]=m[i][j];
-			printf("%d ",m[i][j] );
-        }
+	for(i=0; i < 20; i++){
+		void*k;
+		pthread_join(tid[i],&k); 
+		int* p= (int* )k;
+		printf("%d ",*p);
+		if((i+1)%K==0)
 		printf("\n");
+		m[i]=*p;
+		
+	}
+
+
+	for(i=0; i < B*K; i++){
+            res[i]=m[i];
+        
 	}
 
 	shmdt(res);
@@ -76,15 +102,3 @@ int main(){
 	return 0;
 }
 
-void* mul(void* struk){
-	pass *arg = (pass*)struk;
-    
-	int x,temp=0;
-	pthread_t id=pthread_self();
-
-	for(x=0; x < B; x++){
-        temp+=m1[arg->i][x] * m2[x][arg->j];
-    }
-	m[arg->i][arg->j]=temp;
-	return NULL;
-}
