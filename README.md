@@ -18,8 +18,8 @@ Source code:
 **Screenshot Hasil**
 
 ## Soal 3
-Source code: 
-### Penjelasan soal dan penyelesaian
+Source code: [soal3.c](https://github.com/Raferto/SoalShiftSISOP20_modul3_A05/blob/master/soal3/soal3.c)
+### Penjelasan soal 
 Buat sebuah program C untuk mengkategorikan file. Program ini akan
 memindahkan file sesuai ekstensinya (tidak case sensitive. JPG dan jpg adalah
 sama) ke dalam folder sesuai ekstensinya yang folder hasilnya terdapat di working
@@ -29,7 +29,117 @@ Ada 3 opsi untuk menjalankan program:
 * opsi -f: digunakan untuk mengkategorikan file untuk file-file tertentu sebagai argumen.
 * opsi * : digunakan untuk mengkategorikan file untuk seluruh file dalam current working directory saat program dijalankan.
 * opsi -d: digunakan untuk mengkategorikan file dalam directory tertentu sebagai argumen.
+### Penyelesaian
+* Copy path current working directory
+```c++
+getcwd(cwd, sizeof(cwd));
+```
+* Cek argumen yang dimasukkan benar atau salah
+```
+if(argc < 2) {
+	printf("Argumen invalid");
+	return 0;
+}
+```
+* Untuk opsi `-f`
+* Loop untuk membuat thread sejumlah file
+* Menunggu thread selesai dijalankan
 
+```c++
+if(strcmp(argv[1], "-f") == 0) {
+	for(int i=2; i<argc; i++) {
+		err = pthread_create(&tid[i], NULL, move, (void *)argv[i]);
+		if(err != 0) 
+			printf("\ncan't create thread : [%s]",strerror(err));
+	}
+	for(int j=2; j<argc; j++)
+		pthread_join(tid[j], NULL);
+}
+```
+* Selain opsi `-f`
+* Jika opsi `-d` copy `argv[2]` ke array `folder`
+```c++
+if(strcmp(argv[1], "-d") == 0) {
+	dir = opendir(argv[2]);
+	strcpy(folder, argv[2]);
+}
+```
+* Agar tidak menyertakan direktori, file `soal3.c` dan file `soal3`
+```c++
+if(strcmp(tmp->d_name, ".")==0 || strcmp(tmp->d_name, "..")==0 || strcmp(tmp->d_name, "soal3.c")==0 || strcmp(tmp->d_name, "soal3")==0 || tmp->d_type==DT_DIR) 
+continue;
+```
+* Buat thread
+```c++
+err = pthread_create(&tid[i], NULL, move, tmp->d_name);
+```
+* Tunggu thread selesai dan closedir
+```c++
+for(int j=0; j<i; j++)
+	pthread_join(tid[j], NULL);
+closedir(dir);
+```
+
+* Fungsi `move`
+* Cek extension file
+* Jika ada extension, jadikan huruf kecil dan masukkan ke array `ext`
+* Jika tidak ada extension maka array `ext` diisi "Unknown"
+```c++
+int dot = '.';
+char *extension = NULL;
+extension = strrchr(filepath, dot);
+
+char ext[1000];
+memset(ext, '\0', sizeof(ext));
+if(extension) {
+	extension++;
+	for(int i=0; i<strlen(extension); i++) {
+		ext[i] = tolower(extension[i]);
+	}
+}
+else strcpy(ext, "Unknown");
+```
+* Untuk mengambil nama file
+```c++
+int slash = '/';
+char *filename = NULL;
+filename = strrchr(filepath, slash);
+if(filename) 
+	filename++;
+else filename = filepath;
+```
+* Untuk membuat path direktori extension yang akan dibuat
+```c++
+char folderpath[1000];
+strcpy(folderpath, cwd);
+strcat(folderpath, "/");
+strcat(folderpath, extlower);
+```
+* Buat direktori
+```c++
+mkdir(folderpath, S_IRWXU);
+```
+* Untuk opsi `-d`
+* Array `fullname` untuk menyimpan path file
+* Pindahkan file dengan path yang ada pada `fullname` ke direktori yang ada pada `folderpath`
+```c++
+char fullname[1000];
+strcpy(fullname, folder);
+strcat(fullname, "/");
+strcat(fullname, filename);
+
+strcat(folderpath, "/");
+strcat(folderpath, filename);
+
+rename(fullname, folderpath);
+```
+* Untuk opsi *
+```c++
+strcat(folderpath, "/");
+strcat(folderpath, filename);
+
+rename(filepath, folderpath);
+```
 **Kendala**
 
 **Screenshot Hasil**
