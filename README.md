@@ -57,12 +57,17 @@ if(strcmp(argv[1], "-f") == 0) {
 }
 ```
 * Selain opsi `-f`
-* Jika opsi `-d` copy `argv[2]` ke array `folder`
+* Jika opsi `-d` buka direktori yang ada di `argv[2]` dan copy ke array `folder`
 ```c++
 if(strcmp(argv[1], "-d") == 0) {
 	dir = opendir(argv[2]);
 	strcpy(folder, argv[2]);
 }
+```
+* Jika opsi * buka current working directory
+```c++
+else if((argv[1][0]=='*') && (strlen(argv[1])==1)) {
+	dir = opendir(cwd);
 ```
 * Agar tidak menyertakan direktori, file `soal3.c` dan file `soal3`
 ```c++
