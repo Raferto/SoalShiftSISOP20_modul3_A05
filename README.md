@@ -45,17 +45,12 @@ a. Buat program C dengan nama "4a.c", yang berisi program untuk
 melakukan perkalian matriks. Ukuran matriks pertama adalah 4x2 , dan
 matriks kedua 2x5. Isi dari matriks didefinisikan di dalam kodingan. Matriks
 nantinya akan berisi angka 1-20 ( tidak perlu dibuat filter angka). Tampilkan matriks hasil perkalian tadi ke layar.
-* Membuat struct pass, i adalah baris dan j adalah kolom
-```c
-typedef struct pass{
-	int i, j;
-} pass;
-```
+
 * Deklarasi matriks m1, m2, dan m sebagai matriks hasil perkalian
 ```c
 int m1[B][BK] = { {1,2}, {2,3}, {3,2}, {2,1}},
 m2[BK][K] = { {1,2,1,2,1}, {2,1,2,1,2} },	
-m[B][K]; 
+m[B*K]; 
 ```
 * Membuat kode unik untuk menyambungkan ke program 4b.c dan array `res` untuk menampung nilai matrix hasil perkalian ke program 4b.c 
 ```c
@@ -80,129 +75,123 @@ for(i=0; i < BK; i++){
   printf("\n");
 }
 ```
-* Menetapkan baris dan kolom pada setiap thread
-* Pointer `tid` digunakan untuk menunjukkan alamat memori dengan thread ID dari thread baru.
-* Nilai `attr` di-set `NULL` ketika thread menggunakan atribut default.
-* Parameter ketiga adalah fungsi `mul` untuk menghitung perkalian dua matriks. 
-* Pointer `arg` digunakan untuk memberikan sebuah argumen ke fungsi `mul`
-* Menunggu thread sebelumnya untuk selesai dengan `pthread_join(tid,NULL)`
-```c
-for(i=0; i < B; i++){
-  for(j=0; j < K; j++){
-    pass *arg = (pass*) malloc(sizeof(pass));
-    arg->i=i;
-    arg->j=j;
-    pthread_t tid;
-    err = pthread_create(&tid,NULL,mul,(void*) arg);
-    if(err!=0)
-      printf("\n can't create thread : [%s]",strerror(err));
-    pthread_join(tid,NULL); 
-  }
+* Deklarasi array thread dengan ukuran 20
+```c++
+pthread_t *tid=(pthread_t*)malloc((20)*sizeof(pthread_t));
+```
+* Menyimpan elemen dari baris dan kolom ke `arg`
+```c++
+arg=(int*)malloc((20)*sizeof(int));
+arg[0]=BK;
+
+for(k=0; k<BK; k++){
+	arg[k+1]=m1[i][k];
+}
+for(k=0; k<BK; k++){
+	arg[k+BK+1]=m2[k][j];
 }
 ```
-* Print hasil perkalian matriks dan mengcopy hasil perkalian matriks ke `res`.
+* Buat thread
+```c++
+err = pthread_create(&tid[count++],NULL,mul,(void*) arg);
+```
+* Join thread dan ambil return value
+* Print hasil perkalian matriks 
 ```c
-printf("\nHasil Kali Matriks %dx%d:\n", B, K);
-for(i=0; i < B; i++){
-  for(j=0; j < K; j++){
-    res[i*5+j]=m[i][j];
-    printf("%d ",m[i][j] );
-  }
-  printf("\n");
+for(i=0; i < 20; i++){
+	void*k;
+	pthread_join(tid[i],&k); 
+	int* p= (int* )k;
+	printf("%d ",*p);
+	if((i+1)%K==0)
+	printf("\n");
+	m[i]=*p;
 }
 ```
-* Fungsi `mul` yang digunakan untuk melakukan perkalian matriks
-* `pass *arg` digunakan untuk menampung nilai tiap elemen matriks
-* Loop untuk melakukan perkalian tiap elemen matriks dan hasilnya di letakkan di matriks m
-```c
+* Masukkan hasil perkalian matriks ke `res`.
+```c++
+for(i=0; i < B*K; i++){
+	res[i]=m[i];
+}
+```
+* Fungsi `mul`
+* Loop untuk melakukan perkalian
+* Return value di pass sebagai pointer
+```c++
 void* mul(void* struk){
-  pass *arg = (pass*)struk;    
-  int x,temp=0;
-  
-  pthread_t id=pthread_self();
-  for(x=0; x < B; x++){
-    temp+=m1[arg->i][x] * m2[x][arg->j];
-  }
-  m[arg->i][arg->j]=temp;
-  return NULL;
+	int *arg = (int*)struk;
+	int k=0, i=0;
+
+	int x=arg[0];
+	for(i=1; i<=x; i++)
+		k+=arg[i]*arg[i+x];
+	
+	int *p=(int*)malloc(sizeof(int));
+	*p=k;
+	pthread_exit(p);
 }
 ```
 b. Buat program C dengan nama "4b.c". Program ini akan
 mengambil variabel hasil perkalian matriks dari program "4a.c" (program
 sebelumnya), dan tampilkan hasil matriks tersebut ke layar.
 ( Catatan! : gunakan shared memory). Setelah ditampilkan, berikutnya untuk setiap angka dari matriks tersebut, carilah nilai penjumlahan dari 1 hingga n, dan tampilkan hasilnya ke layar dengan format seperti matriks.
-* Membuat struct `pass`
-```c
-typedef struct pass{
-  int i;
-} pass;
-```
 * Membuat kode unik untuk menyambungkan dan array `res` untuk menampung nilai matrix hasil perkalian
 ```c
 key_t key=1412;
 int shmid=shmget(key,sizeof(int)*4*5, IPC_CREAT | 0666);
 int* res=(int*)shmat(shmid,NULL,0);
 ```
-* Print matriks hasil perkalian dan copy array `res` ke array `number`
+* Masukkan `res` ke array `hasil`
 ```c
+for(i=0; i<20; i++)
+	hasil[i]=res[i];
+```
+* Print matriks hasil perkalian
+```c++
 printf("Matriks hasil perkalian\n");
-for(i=0; i<4; i++){
-  for(j=0; j<5; j++){
-    printf("%d ", res[i*5+j]);
-    number[i*5+j]=res[i*5+j];
-  }
-  printf("\n");
-}
-printf("\n");
-```
-* Pointer `tid` digunakan untuk menunjukkan alamat memori dengan thread ID dari thread baru.
-* Nilai `attr` di-set `NULL` ketika thread menggunakan atribut default.
-* Parameter ketiga adalah fungsi `fungsi` untuk menghitung penjumlahan dari 1 sampai n. 
-* Pointer `arg` digunakan untuk memberikan sebuah argumen ke fungsi `fungsi`
-* Menunggu thread sebelumnya untuk selesai dengan `pthread_join(tid,NULL)`
-```c
-for (i=0;i<20;i++)
-{
-  pass *arg = (pass*) malloc(sizeof(pass));
-  arg->i=i;
-  pthread_t tid;
-  err = pthread_create(&tid,NULL,fungsi,(void*) arg);
-  if(err!=0)
-    printf("\n can't create thread : [%s]",strerror(err));
-  pthread_join(tid,NULL);
+for(i=0; i<20; i++){
+	printf("%d ", hasil[i]);
+	if((i+1)%5==0)
+		printf("\n");
 }
 ```
+* Buat thread
+```c++
+int *arg = (int*) malloc(sizeof(int));
+arg=&hasil[i];
+err = pthread_create(&tid[j++],NULL,fungsi,(void*) arg);
+```
+* Join thread dan ambil return value
 * Print hasil penjumlahan
 ```c
 printf("Hasil penjumlahan\n");
-for (i=0;i<4;i++){
-  for(j=0;j<5;j++)
-  {
-    printf("%d ", matrix[i*5+j]);
-  }
-  printf("\n");
+for(i=0; i<20; i++){
+	void* k;
+	pthread_join(tid[i], &k);
+	int* p=(int*)k;
+	printf("%d ", *p);
+	if((i+1)%5==0)
+		printf("\n");
 }
 ```
 * Fungsi `fungsi` untuk melakukan penjumlahan dari 1 sampai n
-* `pass *angka` digunakan untuk menampung nilai tiap elemen array
-* Loop untuk melakukan penjumlahan tiap elemen dan hasilnya di letakkan di array `matrix`
+* `angka` digunakan untuk menampung nilai array
+* Loop untuk melakukan penjumlahan
+* Return value di pass sebagai pointer
 ```c
 void* fungsi(void *arg)
 {
-	pass* angka=arg;
-    pthread_t id=pthread_self();
-    int i,j,c;
-    for(i=0; i<20; i++){
-	    for(j=0;j<=number[b];j++)
-	    {   
-	        factorial+=j;
-	    }
-    matrix[d]=factorial;
-    factorial=0;
-    b+=1;
-    d+=1;
+	int angka=*(int*)arg;
+	int factorial=0;
+	int i,j;
+	for(i=0; i<=angka; i++)
+	{   
+		factorial+=i;
 	}
-    return NULL;
+	int *p=(int*)malloc(sizeof(int));
+	*p=factorial;
+ 
+	pthread_exit(p);
 }
 ```
 c. Buat program C dengan nama "4c.c". Program ini tidak
