@@ -4,8 +4,8 @@
 **Rafid Ferdianto (05111840000032)**
 
 ## Soal 1
-Source code: 
-### Penjelasan soal dan penyelesaian
+
+- belum selesai
 
 **Kendala**
 
