@@ -6,7 +6,9 @@
 ## Soal 1
 Source code: 
 ### Penjelasan soal dan penyelesaian
+
 **Kendala**
+
 - tidak begitu memahami soal dan implementasinya
 
 **Screenshot Hasil**
@@ -15,6 +17,235 @@ Source code:
 Source code: [soal2_client.c](https://github.com/Raferto/SoalShiftSISOP20_modul3_A05/blob/master/soal2/soal2_client.c)
 	     [soal2_server.c](https://github.com/Raferto/SoalShiftSISOP20_modul3_A05/blob/master/soal2/soal2_server.c)
 ### Penjelasan soal dan penyelesaian
+Soal ini meminta kita membuat game online berbasis text console dengan menggunakan 2 program, 1 client dan 1 server. Pada server hanya akan menampilkan tulisan “Auth success”, “Auth failed”, dan list akun. Sedangkan, pada Client Side terdapat 2 screen sebagai berikut :
+
+**Screen 1**
+
+Pada menu ini player bisa memilih menu login atau register, setelah memilih menu akan dihubungkan ke server sesuai pilihan. Apabila memilih menu login maka client side akan mengirim sinyal i ke server beserta username dan password untuk di cek apakah terdaftar atau tidak. Apabila terdaftar akan mengrimkan sinyal s agar client bisa lanjut ke screen 2. Sedangkan apabila memilih menu register maka akan mengirim sinyal r beserta username dan password ke server untuk didaftakan ke akun.txt (dan array akun).
+
+**Client Side**
+```c++
+bool screen1(){
+    char buffer[1024] = {0};
+    char in[1024],akun[1024];
+    
+    printf("\n1. Login\n2. Register\nChoices : ");
+    scanf("%s", in);
+    if(strcmp(in, "login")==0){
+        send(sock , "i", 1, 0 );
+
+        printf("Username: ");
+        scanf("%s",akun);
+        printf("Password: ");
+        scanf("%s",in);
+        sprintf(akun,"%s %s",akun,in);
+
+        send(sock , akun, strlen(akun), 0 );
+        recv(sock , buffer , 1 , 0);
+        if(strcmp(buffer, "s")==0){
+            printf("login success \n");
+            return true;
+        }
+        else
+            printf("login failed\n");
+    }
+    else if(strcmp(in, "register")==0){
+        send(sock , "r", 1, 0 );
+
+        printf("Username: ");
+        scanf("%s",akun);
+        printf("Password: ");
+        scanf("%s",in);
+        sprintf(akun,"%s %s",akun,in);
+
+        send(sock , akun, strlen(akun), 0 );
+        printf("register success\n");
+    }
+    return false;
+}
+```
+
+**Server Side**
+```c++
+ while(1){
+        char buffer[1024]={0};
+        recv(socket , buffer , 1 , 0);
+
+        if(strcmp(buffer,"i")==0){
+            bool login = false;
+            recv(socket , buffer , 30 , 0);
+
+            for(i=0;i<n;i++){
+                if(strcmp(buffer,akun[i])==0){
+                    login = true;
+                    break;
+                }
+            }
+            if(login){
+                printf("Auth success\n");
+                send(socket , "s" , 1 , 0 );
+            }
+            else{
+                printf("Auth Failed\n");
+                send(socket , "f" , 1 , 0 );
+            }
+        }
+
+        else if(strcmp(buffer, "r")==0){
+            recv(socket , buffer , 30 , 0);
+            FILE *fAkun = fopen("akun.txt", "r+");
+
+            printf("Username Password\n");
+            char c = fgetc(fAkun);
+            while (c != EOF){
+                printf("%c",c );
+                c = fgetc(fAkun);
+            }
+
+            fputs(buffer,fAkun);
+            fputs("\n",fAkun);
+            fclose(fAkun);
+
+            strcpy(akun[n++],buffer);
+            printf("%s\n\n",buffer );
+
+        }
+}
+```
+
+
+**Screen 2**
+
+Pada menu ini player bisa memilih menu find atau logout. Apabila memilih menu logout tinggal dikembalikan ke screen 1 (tidak perlu terhubung ke server), sedangkan untuk menu find, dihunbungkan ke server untuk mencari player lain. Apabila belum ada player lain maka akan dibuatkan room baru (struct) dan player 1 diisi thread dari player ini. Apabila sudah ada player lain (yangg menunggu) maka langsung dihubungkan ke room yang sudah ada dan player 2 diisi thread dari player ini. Kemudian kedua player akan diberi signal oleh server untuk memulai pertandingan. Pada setiap player digunakan 2 thread, satu untuk menyerang dan satu lagi apabila terkena damage. thread menyerang mengirim signal ke server dan selanjutnya akan dikirim ke lawan bahwa healthnya telah berkurang. Apabila player sudah ada yang kalah(health = 0) maka player tersebut akan mengirim signal ke server agar memberi tahu bahwa game telah selesai dan player yang satunya menang. Setelah selesai kedua player akan kembali ke screen 2 lagi.
+
+**Client Side**
+```c++
+bool screen2(){
+    char buffer[1024] = {0},
+         in[1024] , c;
+
+    printf("\n1. Find Match\n2. Logout\nChoices : ");
+    scanf("%s",in);
+    if(strcmp(in, "logout")==0)
+        return false;
+    
+    else if(strcmp(in, "find")==0){
+        pthread_t a,d,w;
+
+        send(sock , "p" , 1 , 0 );
+        ingame = true;
+
+        recv(sock , buffer , 1 , 0);
+        if(strcmp(buffer, "w")==0){
+            ingame = false;
+            if(pthread_create(&w,NULL,wait,NULL) != 0){
+                perror("threads");
+                exit(1);
+            }
+        }
+        while(!ingame)
+            printf("Waiting for player ...\n");
+        
+        pthread_join(w,NULL);
+            
+        if(pthread_create(&a,NULL,attack,NULL) != 0){
+            perror("threads");
+            exit(1);
+        }
+        if(pthread_create(&d,NULL,defend,NULL) != 0){
+            perror("threads");
+            exit(1);
+        }
+
+        pthread_join(a,NULL);
+        pthread_join(d,NULL);
+    }
+
+    return true;
+}
+```
+**Thread attack pada Client Side**
+```c++
+void *attack(){
+    char c;
+    printf("Game dimulai silahkan tap tap secepat mungkin !!\n");
+
+    while(ingame){
+        system("stty raw");
+        c=getchar();
+        if(c == ' ' && ingame){
+            printf("hit!!");
+            send(sock , "a", 1, 0);
+        }
+    }
+    system("stty cooked");
+    return NULL;
+}
+```
+**Thread diserang pada Client Side**
+```c++
+void *defend(){
+    health = 100;
+    while(ingame){
+        char buffer[1024]={0};
+        recv(sock , buffer , 1 , 0);
+        system("stty cooked");
+        if(strcmp(buffer, "a")==0){
+            health-=10;
+            if(health)
+                printf("\nHealth : %d\n",health);
+            else{
+                ingame = false;
+                send(sock , "x", 1, 0);
+                printf("\nGame berakhir kamu kalah\n");
+                recv(sock , buffer , 1 , 0);
+            }
+        }
+        else{
+            ingame = false;
+            send(sock , "x", 1, 0);
+            printf("\nGame berakhir kamu menang\n");
+        }
+        system("stty raw");
+    }
+    return NULL;
+}
+```
+**Server Side**
+```c++
+while(1){
+        char buffer[1024]={0};
+        recv(socket , buffer , 1 , 0);
+
+        else{
+		int *ingame = (int*) malloc(sizeof(int));
+		*ingame = 1;
+		match = (game*) malloc(sizeof(game));
+		match->p1 = pthread_arg;
+		match->status = ingame;
+
+		status = 1;
+
+		send(socket , "w" , 1 , 0 );
+		while(*ingame);
+		send(socket , "r" , 1 , 0 );
+
+		int e_socket = match->p2->new_socket_fd;
+		while(!(*ingame)){
+		    recv(socket , buffer , 1 , 0);
+		    if(strcmp(buffer, "a")==0)
+			send(e_socket , "a" , 1 , 0 );
+		    else{
+			*ingame = 1;
+			send(e_socket , "x" , 1 , 0 );
+		    }
+		}
+        }
+}
+
+```
+
+
 **Kendala**
 - kesulitan mengimplementasikan soal
 
