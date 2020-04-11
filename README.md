@@ -386,7 +386,28 @@ rename(filepath, folderpath);
 ```
 **Kendala**
 
+* Kurang waktu untuk mengerjakan
+
 **Screenshot Hasil**
+* Opsi `-d`
+
+![-d1](https://user-images.githubusercontent.com/61036923/79040982-7e669c00-7c16-11ea-8c1e-fabedbc2f29a.png)
+![-d2](https://user-images.githubusercontent.com/61036923/79040988-845c7d00-7c16-11ea-8101-f0a8fd7e2a56.png)
+![-d3](https://user-images.githubusercontent.com/61036923/79040990-86bed700-7c16-11ea-88c1-2c5bbfa51477.png)
+![-d4](https://user-images.githubusercontent.com/61036923/79040992-8aeaf480-7c16-11ea-8adf-7efa2ed6d9a0.png)
+
+* Opsi `-f`
+
+![-f1](https://user-images.githubusercontent.com/61036923/79040995-8fafa880-7c16-11ea-859e-3278f64cbd0f.png)
+![-f2](https://user-images.githubusercontent.com/61036923/79040963-6262fa80-7c16-11ea-97f3-518110f26c02.png)
+![-f3](https://user-images.githubusercontent.com/61036923/79040969-6bec6280-7c16-11ea-9110-a07ea64cfd6b.png)
+![-f4](https://user-images.githubusercontent.com/61036923/79040971-6ee75300-7c16-11ea-85b4-ca4f8e2ad854.png)
+
+* Opsi `*`
+
+![star1](https://user-images.githubusercontent.com/61036923/79040973-70b11680-7c16-11ea-918e-22da3ea80c14.png)
+![star2](https://user-images.githubusercontent.com/61036923/79040980-79a1e800-7c16-11ea-9113-20ef2b3424f2.png)
+
 
 ## Soal 4
 Source code:
@@ -594,4 +615,18 @@ execv("/usr/bin/wc", argv1);
 ```
 **Kendala**
 
+* Ada hasil perkalian yang salah
+
 **Screenshot Hasil**
+
+* Soal4a
+
+![4a](https://user-images.githubusercontent.com/61036923/79041202-1749e700-7c18-11ea-8e27-6796acff933c.png)
+
+* Soal4b
+
+![4b](https://user-images.githubusercontent.com/61036923/79041209-27fa5d00-7c18-11ea-973d-b81960483f52.png)
+
+* Soal4c
+
+![4c](https://user-images.githubusercontent.com/61036923/79041214-2f216b00-7c18-11ea-9c41-5c1e7405e049.png)
