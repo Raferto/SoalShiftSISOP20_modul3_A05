@@ -7,14 +7,16 @@
 Source code: 
 ### Penjelasan soal dan penyelesaian
 **Kendala**
+- tidak begitu memahami soal dan implementasinya
 
 **Screenshot Hasil**
 
 ## Soal 2
-Source code: 
+Source code: [soal2_client.c](https://github.com/Raferto/SoalShiftSISOP20_modul3_A05/blob/master/soal2/soal2_client.c)
+	     [soal2_server.c](https://github.com/Raferto/SoalShiftSISOP20_modul3_A05/blob/master/soal2/soal2_server.c)
 ### Penjelasan soal dan penyelesaian
 **Kendala**
-
+- kesulitan mengimplementasikan soal
 **Screenshot Hasil**
 
 ## Soal 3
