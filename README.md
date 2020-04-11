@@ -17,6 +17,7 @@ Source code: [soal2_client.c](https://github.com/Raferto/SoalShiftSISOP20_modul3
 ### Penjelasan soal dan penyelesaian
 **Kendala**
 - kesulitan mengimplementasikan soal
+
 **Screenshot Hasil**
 ![2.1](https://user-images.githubusercontent.com/57932819/79036704-1d7a9c00-7bf5-11ea-8dd8-1362c296f5a3.png)
 ![2.2](https://user-images.githubusercontent.com/57932819/79036708-24a1aa00-7bf5-11ea-9be7-d672a159a90b.png)
