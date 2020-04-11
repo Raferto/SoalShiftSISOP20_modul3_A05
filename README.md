@@ -18,6 +18,13 @@ Source code: [soal2_client.c](https://github.com/Raferto/SoalShiftSISOP20_modul3
 **Kendala**
 - kesulitan mengimplementasikan soal
 **Screenshot Hasil**
+![2.1](https://user-images.githubusercontent.com/57932819/79036704-1d7a9c00-7bf5-11ea-8dd8-1362c296f5a3.png)
+![2.2](https://user-images.githubusercontent.com/57932819/79036708-24a1aa00-7bf5-11ea-9be7-d672a159a90b.png)
+![2.3](https://user-images.githubusercontent.com/57932819/79036719-3edb8800-7bf5-11ea-80a5-3a80c4540bb5.png)
+![2.4](https://user-images.githubusercontent.com/57932819/79036726-5155c180-7bf5-11ea-9cd2-eb4ef7ac8015.png)
+![2.5](https://user-images.githubusercontent.com/57932819/79036727-53b81b80-7bf5-11ea-9648-999b79ada88e.png)
+![2.6](https://user-images.githubusercontent.com/57932819/79036728-561a7580-7bf5-11ea-8246-213af3eb24c5.png)
+![2.7](https://user-images.githubusercontent.com/57932819/79036730-587ccf80-7bf5-11ea-9193-b82c7c9680e2.png)
 
 ## Soal 3
 Source code: [soal3.c](https://github.com/Raferto/SoalShiftSISOP20_modul3_A05/blob/master/soal3/soal3.c)
